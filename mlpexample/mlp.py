@@ -45,13 +45,16 @@ class MLP:
     def _init_params(self, n_params):
         theta = jnp.empty((n_params,))
 
+        key = self.random_key
+
         # Initialize weights using the Xavier initialization.
         i = 0
         d_in = self.dims[0]
         for d_out in self.dims[1:]:
+            key, subkey = jax.random.split(key)
             W_size = d_in * d_out
             theta = theta.at[i : i + d_in * d_out].set(
-                jnp.sqrt(1.0 / d_in) * jax.random.normal(self.random_key, W_size)
+                jnp.sqrt(1.0 / d_in) * jax.random.normal(subkey, W_size)
             )
             theta = theta.at[i + W_size : i + W_size + d_out].set(0.0)
 
