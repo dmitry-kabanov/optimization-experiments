@@ -80,8 +80,8 @@ class MLP:
 
         return z
 
-    def predict(self, x_2d):
-        assert len(x_2d.shape) == 2
-        predictions = self(x_2d)
+    def predict(self, x_inp):
+        x_2d = np.atleast_2d(x_inp)
+        predictions = np.asarray(self(x_2d))
 
         return predictions

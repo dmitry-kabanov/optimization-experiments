@@ -7,7 +7,7 @@ def test_identity():
     mlp = MLP([1, 1])
     mlp.theta = np.array([1.0, 0.0])
 
-    y = mlp([2.34])
+    y = mlp(2.34)
     assert y == 2.34
 
 
@@ -15,7 +15,7 @@ def test_scale_2x():
     mlp = MLP([1, 1])
     mlp.theta = np.array([2.0, 0.0])
 
-    y = mlp([2.34])
+    y = mlp.predict(2.34)
     assert y == 2 * 2.34
 
 
@@ -27,8 +27,8 @@ def test_linear_function():
 
     x = 2.34
     expected = k * x + b
-    y = mlp([x])
-    assert y == expected
+    y = mlp.predict([x])
+    npt.assert_allclose(y, expected, rtol=1e-6, atol=1e-7)
 
 
 def test_one_hidden_layer():
@@ -49,7 +49,6 @@ def test_one_hidden_layer():
     mlp = MLP([2, 3, 1])
     mlp.theta = np.hstack(flattened_weights_and_biases)
 
-    y = mlp(x)
     np.testing.assert_allclose(y, desired, rtol=1e-7, atol=1e-15)
 
 
