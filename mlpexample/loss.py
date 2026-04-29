@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 
 
-class Loss:
+class MisfitLoss:
     def __init__(self, model, given_x, given_y):
         if len(given_y.shape) == 1:
             given_y = jnp.reshape(given_y, (-1, 1))
@@ -11,7 +11,7 @@ class Loss:
         self.given_x = given_x
         self.given_y = given_y
 
-    def loss_misfit(self, theta):
+    def loss(self, theta):
         self.model.theta = theta
 
         pred = self.model(self.given_x)

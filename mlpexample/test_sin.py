@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from jax import grad
-from loss import Loss
+from loss import MisfitLoss
 from mlp import MLP
 from scipy import optimize
 
@@ -12,7 +12,7 @@ def test_1():
     x_2d = np.reshape(x, (len(x), -1))
 
     mlp = MLP([1, 50, 1])
-    loss = Loss(mlp, x_2d, y)
+    loss = MisfitLoss(mlp, x_2d, y)
     loss_fn = loss.loss_misfit
     grad_loss = grad(loss_fn)
 
