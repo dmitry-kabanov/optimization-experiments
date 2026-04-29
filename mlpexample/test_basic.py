@@ -8,7 +8,7 @@ def test_identity():
     mlp = MLP([1, 1])
     mlp.theta = np.array([1.0, 0.0])
 
-    y = mlp(2.34)
+    y = mlp.predict(2.34)
     assert y == 2.34
 
 
