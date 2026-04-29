@@ -28,4 +28,4 @@ def test_1():
 
     plt.plot(x, y, "-")
     plt.plot(x, pred, "o")
-    plt.show()
+    plt.savefig("sin_func.pdf")
