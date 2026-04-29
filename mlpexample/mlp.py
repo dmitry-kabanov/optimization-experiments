@@ -48,10 +48,10 @@ class MLP:
         d_in = self.dims[0]
         for d_out in self.dims[1:]:
             W_size = d_in * d_out
-            theta.at[i : i + d_in * d_out].set(
+            theta = theta.at[i : i + d_in * d_out].set(
                 jnp.sqrt(1.0 / d_in) * jax.random.normal(self.random_key, W_size)
             )
-            theta.at[i + W_size : i + W_size + d_out].set(0.0)
+            theta = theta.at[i + W_size : i + W_size + d_out].set(0.0)
 
             i += W_size + d_out
             d_in = d_out
