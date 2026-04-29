@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.testing as npt
 from loss import Loss
 from mlp import MLP
 
@@ -49,6 +50,7 @@ def test_one_hidden_layer():
     mlp = MLP([2, 3, 1])
     mlp.theta = np.hstack(flattened_weights_and_biases)
 
+    y = mlp(np.atleast_2d(x))
     np.testing.assert_allclose(y, desired, rtol=1e-7, atol=1e-15)
 
 

@@ -1,6 +1,6 @@
+import jax
 import jax.numpy as jnp
 import numpy as np
-from jax import grad
 
 
 class MLP:
@@ -15,7 +15,7 @@ class MLP:
         List or array of integers that specify the dimensions of layers.
     """
 
-    def __init__(self, dims):
+    def __init__(self, dims, seed=42):
         self.dims = dims
 
         # Number of parameters
@@ -28,10 +28,11 @@ class MLP:
 
         assert dims[-1] == 1
 
+        self.random_key = jax.random.key(seed)
         self._theta = self._init_params(n_params)
 
     @property
-    def theta(self) -> np.ndarray:
+    def theta(self):
         return self._theta
 
     @theta.setter
@@ -39,25 +40,26 @@ class MLP:
         assert len(self._theta) == len(value)
         self._theta = value
 
-    def _init_params(self, n_params) -> np.ndarray:
-        theta = np.empty((n_params,))
+    def _init_params(self, n_params):
+        theta = jnp.empty((n_params,))
 
         # Initialize weights using the Xavier initialization.
         i = 0
         d_in = self.dims[0]
         for d_out in self.dims[1:]:
             W_size = d_in * d_out
-            theta[i : i + d_in * d_out] = np.sqrt(1.0 / d_in) * np.random.randn(W_size)
-            theta[i + W_size : i + W_size + d_out] = 0.0
+            theta.at[i : i + d_in * d_out].set(
+                jnp.sqrt(1.0 / d_in) * jax.random.normal(self.random_key, W_size)
+            )
+            theta.at[i + W_size : i + W_size + d_out].set(0.0)
 
             i += W_size + d_out
             d_in = d_out
 
         return theta
 
-    def __call__(self, x):
-        x = np.atleast_2d(x)
-        assert x.shape[-1] == self.dims[0]
+    def __call__(self, x_inp):
+        x = jnp.atleast_2d(x_inp)
 
         z = x
         i = 0
