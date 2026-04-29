@@ -1,3 +1,5 @@
+import functools
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -16,7 +18,7 @@ class MLP:
     """
 
     def __init__(self, dims, seed=42):
-        self.dims = dims
+        self.dims = tuple(dims)
 
         # Number of parameters
         n_params = 0
@@ -58,32 +60,35 @@ class MLP:
 
         return theta
 
-    def __call__(self, x_inp):
-        x = jnp.atleast_2d(x_inp)
-
-        z = x
-        i = 0
-        d_in = self.dims[0]
-        for d_out in self.dims[1:-1]:
-            W_size = d_in * d_out
-            b_size = d_out
-            W = self._theta[i : i + W_size].reshape((d_in, d_out))
-            b = self._theta[i + W_size : i + W_size + b_size]
-            z = jnp.tanh(z @ W + b)
-            i += W_size + b_size
-            d_in = d_out
-
-        d_out = self.dims[-1]
-        W_size = d_in * d_out
-        b_size = d_out
-        W = self._theta[i : i + W_size].reshape((d_in, d_out))
-        b = self._theta[i + W_size : i + W_size + b_size]
-        z = z @ W + b
-
-        return z
+    def __call__(self, x):
+        return call(x, self.theta, self.dims)
 
     def predict(self, x_inp):
         x_2d = np.atleast_2d(x_inp)
         predictions = np.asarray(self(x_2d))
 
         return predictions
+
+
+@functools.partial(jax.jit, static_argnames=("dims",))
+def call(x, theta, dims):
+    z = x
+    i = 0
+    d_in = dims[0]
+    for d_out in dims[1:-1]:
+        W_size = d_in * d_out
+        b_size = d_out
+        W = theta[i : i + W_size].reshape((d_in, d_out))
+        b = theta[i + W_size : i + W_size + b_size]
+        z = jnp.tanh(z @ W + b)
+        i += W_size + b_size
+        d_in = d_out
+
+    d_out = dims[-1]
+    W_size = d_in * d_out
+    b_size = d_out
+    W = theta[i : i + W_size].reshape((d_in, d_out))
+    b = theta[i + W_size : i + W_size + b_size]
+    z = z @ W + b
+
+    return z
