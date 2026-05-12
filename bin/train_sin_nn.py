@@ -1,3 +1,5 @@
+import argparse
+
 import jax
 import matplotlib.pyplot as plt
 import numpy as np
@@ -7,11 +9,20 @@ from openinterfaces.interfaces.optim import Optim
 
 jax.config.update("jax_enable_x64", True)
 
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--split-key",
+    action="store_true",
+    default=False,
+    help="Split random seed (key) for each layer. See the JAX docs for details",
+)
+args = parser.parse_args()
+
 x = np.linspace(-2 * np.pi, 2 * np.pi, num=101)
 y = np.sin(x)
 x_2d = np.reshape(x, (len(x), -1))
 
-mlp = MLP([1, 50, 1])
+mlp = MLP([1, 50, 1], seed=42, split_key=args.split_key)
 misfit_loss = MisfitLoss(mlp, x_2d, y)
 loss_fn = misfit_loss.loss
 grad_fn = jax.grad(loss_fn)
