@@ -7,6 +7,8 @@ from loss import MisfitLoss
 from mlp import MLP
 from openinterfaces.interfaces.optim import Optim
 
+from helpers import finish_experiment, start_experiment
+
 jax.config.update("jax_enable_x64", True)
 
 parser = argparse.ArgumentParser()
@@ -17,6 +19,8 @@ parser.add_argument(
     help="Split random seed (key) for each layer. See the JAX docs for details",
 )
 args = parser.parse_args()
+
+OUTDIR = start_experiment(args)
 
 x = np.linspace(-2 * np.pi, 2 * np.pi, num=101)
 y = np.sin(x)
@@ -55,5 +59,6 @@ plt.plot(x, pred, "o")
 plt.xlabel(r"$x$")
 plt.ylabel(r"$\sin(x)$")
 plt.tight_layout(pad=0.1)
-plt.savefig("assets/sin_func.pdf")
-# plt.show()
+plt.savefig(OUTDIR / "sin_func.pdf")
+
+finish_experiment(OUTDIR)
