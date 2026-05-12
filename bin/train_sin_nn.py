@@ -15,6 +15,18 @@ jax.config.update("jax_enable_x64", True)
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
+        "--impl",
+        choices=["scipy_optimize", "optim_jl"],
+        default="scipy_optimize",
+        help="Which implementation from Open Interfaces to use",
+    )
+    parser.add_argument(
+        "--opt",
+        choices=["L-BFGS"],
+        default="L-BFGS",
+        help="What optimization algorithm to use",
+    )
+    parser.add_argument(
         "--split-key",
         action="store_true",
         default=False,
@@ -24,6 +36,14 @@ def _parse_args():
 
 
 args = _parse_args()
+method_name = args.opt
+if method_name == "L-BFGS":
+    if args.impl == "scipy_optimize":
+        method_name = "L-BFGS-B"
+    elif args.impl == "optim_jl":
+        method_name = "LBFGS"
+    else:
+        raise ValueError()
 
 OUTDIR = start_experiment(args)
 
@@ -45,11 +65,17 @@ def wrapper_grad_fn(x, grad_values, __):
     grad_values[:] = np.array(grad_fn(x))
 
 
-s = Optim("scipy_optimize")
+s = Optim(args.impl)
 s.set_initial_guess(np.asarray(mlp.theta, dtype=np.float64))
 s.set_objective_fn(wrapper_loss_fn)
 s.set_grad_fn(wrapper_grad_fn)
-s.set_method("L-BFGS-B", {"gtol": 1e-7})
+if args.impl == "scipy_optimize":
+    options = {"gtol": 1e-7}
+elif args.impl == "optim_jl":
+    options = {"g_abstol": 1e-7}
+else:
+    raise ValueError()
+s.set_method(method_name, options)
 status, message = s.minimize()
 
 print("status = ", status)
