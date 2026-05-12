@@ -17,7 +17,7 @@ class MLP:
         List or array of integers that specify the dimensions of layers.
     """
 
-    def __init__(self, dims, seed=42):
+    def __init__(self, dims, seed=42, split_key=True):
         self.dims = tuple(dims)
 
         # Number of parameters
@@ -31,7 +31,9 @@ class MLP:
         assert dims[-1] == 1
 
         self.random_key = jax.random.key(seed)
+        self.split_key = split_key
         self._theta = self._init_params(n_params)
+        print("std of parameters vector: ", jnp.std(self._theta))
 
     @property
     def theta(self):
@@ -45,13 +47,17 @@ class MLP:
     def _init_params(self, n_params):
         theta = jnp.empty((n_params,))
 
-        key = self.random_key
+        if self.split_key:
+            key = self.random_key
+        else:
+            subkey = self.random_key
 
         # Initialize weights using the Xavier initialization.
         i = 0
         d_in = self.dims[0]
         for d_out in self.dims[1:]:
-            key, subkey = jax.random.split(key)
+            if self.split_key:
+                key, subkey = jax.random.split(key)
             W_size = d_in * d_out
             theta = theta.at[i : i + d_in * d_out].set(
                 jnp.sqrt(1.0 / d_in) * jax.random.normal(subkey, W_size)
@@ -64,6 +70,8 @@ class MLP:
         return theta
 
     def __call__(self, x):
+        # We delegate to the `call` function here,
+        # because it is behind JAX's `jit` compiler, hence, must be pure.
         return call(x, self.theta, self.dims)
 
     def predict(self, x_inp):
