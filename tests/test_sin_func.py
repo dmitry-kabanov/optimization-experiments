@@ -1,6 +1,10 @@
+import os
+from pathlib import Path
+
 import jax
 import matplotlib.pyplot as plt
 import numpy as np
+import numpy.testing as npt
 from loss import MisfitLoss
 from mlp import MLP
 from scipy import optimize
@@ -8,6 +12,8 @@ from scipy import optimize
 # Enable float64 instead of float32 by default.
 # Normally, ML folks work with float32 numbers, and JAX uses them by default.
 jax.config.update("jax_enable_x64", True)
+
+FIXTURE_PATH = Path(__file__).parent / "pred-sin-func"
 
 
 def test_1():
@@ -35,6 +41,10 @@ def test_1():
 
     assert np.linalg.norm(y - pred, 2) / np.linalg.norm(y) < 1e-2
 
-    plt.plot(x, y, "-")
-    plt.plot(x, pred, "o")
-    plt.savefig("assets/sin_func.pdf")
+    oif_pred = np.load(
+        os.path.join(
+            FIXTURE_PATH, "NN=1-50-1_oif-scipy-optimize_L-BFGS-B_gtol=1e-7.npy"
+        )
+    )
+
+    npt.assert_allclose(pred, oif_pred, rtol=1e-12, atol=1e-12)
