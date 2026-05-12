@@ -11,14 +11,19 @@ from helpers import finish_experiment, start_experiment
 
 jax.config.update("jax_enable_x64", True)
 
-parser = argparse.ArgumentParser()
-parser.add_argument(
-    "--split-key",
-    action="store_true",
-    default=False,
-    help="Split random seed (key) for each layer. See the JAX docs for details",
-)
-args = parser.parse_args()
+
+def _parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--split-key",
+        action="store_true",
+        default=False,
+        help="Split random seed (key) for each layer. See the JAX docs for details",
+    )
+    return parser.parse_args()
+
+
+args = _parse_args()
 
 OUTDIR = start_experiment(args)
 
