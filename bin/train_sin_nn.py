@@ -47,7 +47,7 @@ if method_name == "L-BFGS":
 
 OUTDIR = start_experiment(args)
 
-x = np.linspace(-2 * np.pi, 2 * np.pi, num=101)
+x, dx = np.linspace(-2 * np.pi, 2 * np.pi, num=101, retstep=True)
 y = np.sin(x)
 x_2d = np.reshape(x, (len(x), -1))
 
@@ -84,6 +84,8 @@ print("message = ", message)
 mlp.theta = s.x
 pred = mlp.predict(x_2d)
 pred = np.squeeze(pred)
+
+print("L2-error: ", np.linalg.norm(y - pred, 2) * np.sqrt(dx))
 
 plt.plot(x, y, "-")
 plt.plot(x, pred, "o")
