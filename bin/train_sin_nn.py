@@ -1,4 +1,5 @@
 import argparse
+import time
 
 import jax
 import matplotlib.pyplot as plt
@@ -90,7 +91,9 @@ def main():
         raise ValueError()
     s.set_method(method_name, options)
 
+    tic = time.perf_counter()
     status, message = s.minimize()
+    toc = time.perf_counter()
 
     print("status = ", status)
     print("message = ", message)
@@ -100,6 +103,7 @@ def main():
     pred = np.squeeze(pred)
 
     print("Prediction error, 2-norm: ", np.linalg.norm(y_test - pred, 2) * np.sqrt(dx))
+    print(f"Elapsed time: {toc - tic:.3f} seconds")
 
     plt.plot(x, y, "-")
     plt.plot(x, pred, "o")
