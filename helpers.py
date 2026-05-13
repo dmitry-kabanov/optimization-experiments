@@ -26,8 +26,11 @@ def start_experiment(args: argparse.Namespace) -> Path:
     params_str = "_".join(sorted_params)
 
     # 3. Construct the path
-    dir_name = f"{timestamp}_{params_str}.inprogress"
-    outdir = Path("_output") / dir_name
+    outdir = f"{timestamp}_{params_str}.inprogress"
+    if hasattr(args, outdir):
+        outdir = Path(args.outdir) / outdir
+    else:
+        outdir = Path("_output") / outdir
 
     # 4. Check existence and create
     if outdir.exists():

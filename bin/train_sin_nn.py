@@ -33,6 +33,11 @@ def _parse_args():
         default=False,
         help="Split random seed (key) for each layer. See the JAX docs for details",
     )
+    parser.add_argument(
+        "--outdir",
+        default="_output",
+        help="Path to the dir, in which the results subdir will be created",
+    )
     return parser.parse_args()
 
 
