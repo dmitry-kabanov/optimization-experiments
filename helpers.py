@@ -46,6 +46,7 @@ def finish_experiment(outdir: Path) -> Path:
     new_path = outdir.with_name(new_name)
 
     finalized_outdir = outdir.rename(new_path)
+    print(f"Experiment directory is {finalized_outdir.name}")
 
     symlink_path = new_path.parent / "current"
 
