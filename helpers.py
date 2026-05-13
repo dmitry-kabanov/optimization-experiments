@@ -1,4 +1,5 @@
 import argparse
+import json
 import os
 from datetime import datetime
 from pathlib import Path
@@ -37,6 +38,9 @@ def start_experiment(args: argparse.Namespace) -> Path:
         raise RuntimeError(f"Directory already exists: {outdir}")
 
     outdir.mkdir(parents=True, exist_ok=False)
+
+    with open(outdir / "config.json", "w") as f:
+        json.dump(vars(args), f, indent=4)
 
     return outdir
 
