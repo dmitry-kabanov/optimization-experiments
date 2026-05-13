@@ -34,6 +34,7 @@ class MLP:
         self.split_key = split_key
         self._theta = self._init_params(n_params)
         print("std of parameters vector: ", jnp.std(self._theta))
+        print("Dimension of the parameter vector: ", len(self._theta))
 
     @property
     def theta(self):
