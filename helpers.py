@@ -16,7 +16,9 @@ def start_experiment(args: argparse.Namespace) -> Path:
     # We convert the Namespace to a dict to sort by key
     arg_dict = vars(args)
     sorted_params = []
-    for key_orig in sorted(arg_dict.keys()):
+    for key_orig in arg_dict.keys():
+        if key_orig == "outdir":
+            continue
         key = key_orig.replace("_", "-")
         val = arg_dict[key_orig]
         # Format boolean flags or None types for cleaner folder names
@@ -28,7 +30,7 @@ def start_experiment(args: argparse.Namespace) -> Path:
 
     # 3. Construct the path
     outdir = f"{timestamp}_{params_str}.inprogress"
-    if hasattr(args, outdir):
+    if hasattr(args, "outdir"):
         outdir = Path(args.outdir) / outdir
     else:
         outdir = Path("_output") / outdir
