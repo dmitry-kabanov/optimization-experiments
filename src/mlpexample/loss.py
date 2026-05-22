@@ -80,3 +80,40 @@ class ViscousBurgersEquationLoss:
         tx_2D = tx_point[None, :]
         out = self.u(tx_2D)
         return out[0, 0]
+
+
+class InitialConditionLoss:
+    def __init__(self, model, t0=0.0, given_x=None):
+        assert isinstance(t0, float)
+        assert isinstance(given_x, np.ndarray)
+        self.u = model
+        self.X = jnp.column_stack((t0 * jnp.ones(len(given_x)), given_x))
+
+    def loss(self, theta):
+        # self.u.theta
+        # Define u as a pure function of (t, x) → scalar, with theta fixed
+        def u_scalar(tx):
+            # tx shape: (2,) — single collocation point [t, x]
+            tx_2d = tx[None, :]  # shape (1, 2) — model expects 2-D input
+            out = call(tx_2d, theta, self.u.dims)  # shape (1, 1)
+            return out[0, 0]  # scalar
+
+        def residual(tx):
+            u_val = u_scalar(tx)
+
+            return self.ic(tx[1]) - u_val
+
+        residuals = jax.vmap(residual)(self.X)
+        ic_reg = jnp.mean(residuals**2)
+
+        return ic_reg
+
+    def ic(self, x):
+        return 0.5 - 0.25 * jnp.sin(jnp.pi * x)
+
+    def ic_map(self, x_arr: np.ndarray):
+        result = np.empty_like(x_arr)
+        for i, x in enumerate(x_arr):
+            result[i] = self.ic(x)
+
+        return np.array(result)
