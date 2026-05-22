@@ -117,3 +117,34 @@ class InitialConditionLoss:
             result[i] = self.ic(x)
 
         return np.array(result)
+
+
+class PeriodicBoundaryConditionLoss:
+    def __init__(self, model, given_t=[], xleft=0.0, xright=2.0):
+        self.u = model
+        assert isinstance(xleft, float)
+        assert isinstance(xright, float)
+        assert isinstance(given_t, np.ndarray)
+        self.xleft = xleft
+        self.xright = xright
+
+        self.Xleft = jnp.column_stack((given_t, xleft * np.ones(len(given_t))))
+        self.Xright = jnp.column_stack((given_t, xright * np.ones(len(given_t))))
+
+    def loss(self, theta):
+        def u_scalar(tx):
+            # tx shape: (2,) — single collocation point [t, x]
+            tx_2d = tx[None, :]  # shape (1, 2) — model expects 2-D input
+            out = call(tx_2d, theta, self.u.dims)  # shape (1, 1)
+            return out[0, 0]  # scalar
+
+        # def residual(tx):
+        #     u_val = u_scalar(tx)
+
+        #     return 0.5 - 0.25 * jnp.sin(jnp.pi * tx[1]) - u_val
+
+        uleft = jax.vmap(u_scalar)(self.Xleft)
+        uright = jax.vmap(u_scalar)(self.Xright)
+        bc_reg = jnp.mean((uright - uleft) ** 2)
+
+        return bc_reg
