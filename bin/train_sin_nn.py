@@ -23,7 +23,7 @@ def _parse_args():
     )
     parser.add_argument(
         "--opt",
-        choices=["L-BFGS"],
+        choices=["L-BFGS", "BFGS"],
         default="L-BFGS",
         help="What optimization algorithm to use",
     )
@@ -84,14 +84,38 @@ def main():
     s.set_initial_guess(np.asarray(mlp.theta, dtype=np.float64))
     s.set_objective_fn(wrapper_loss_fn)
     s.set_grad_fn(wrapper_grad_fn)
+
+    # Implementations of different algorithms in SciPy and Optim.jl
+    # differ in terms of their termination criterion:
+    # *BFGS*:
+    #   - SciPy accepts only reltol for x in Inf-norm
+    #     and absolute tolerance for the gradient in a given norm
+    #     (np.Inf by default),
+    #   - Optim.jl accepts more but only in Inf-norm.
+    # *L-BFGS*:
+    #  - SciPy accepts ftol
+    #  - Optim.jl accepts more
+    # so we need to match options, to compare red apples to similarly red apples.
     if args.impl == "scipy_optimize":
-        options = {"gtol": 1e-7}
+        if args.opt == "L-BFGS":
+            options = {"ftol": 2.2204460492503131e-09}
+        elif args.opt == "BFGS":
+            options = {"gtol": 1e-7}
+        else:
+            raise ValueError()
     elif args.impl == "optim_jl":
-        options = {
-            "f_abstol": 2.2204460492503131e-09,
-            "g_abstol": 1e-7,
-            "iterations": 30_000,
-        }
+        if args.opt == "L-BFGS":
+            options = {
+                "f_abstol": 2.2204460492503131e-09,
+                "iterations": 30_000,
+            }
+        elif args.opt == "BFGS":
+            options = {
+                "g_abstol": 1e-7,
+                "iterations": 30_000,
+            }
+        else:
+            raise ValueError()
     else:
         raise ValueError()
     s.set_method(method_name, options)
