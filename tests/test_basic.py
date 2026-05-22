@@ -1,6 +1,5 @@
 import numpy as np
 import numpy.testing as npt
-from loss import Loss
 from mlp import MLP
 
 

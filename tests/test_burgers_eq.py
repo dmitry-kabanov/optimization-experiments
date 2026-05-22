@@ -1,30 +1,33 @@
-import matplotlib.pyplot as plt
+import jax
 import numpy as np
 from jax import grad
 from loss import ViscousBurgersEquationLoss
 from mlp import MLP
 from scipy import optimize
 
-x = np.linspace(0, 2, num=3)
-t = np.linspace(0, 2, num=2)
+# Enable x64 precision
+jax.config.update("jax_enable_x64", True)
 
-nu = 0.01 / np.pi
 
-mlp = MLP([2, 50, 1])
-vbeloss = ViscousBurgersEquationLoss(mlp, x, t, nu)
-loss_fn = vbeloss.loss
-grad_loss = grad(loss_fn)
+def test_burgers_pinn():
+    x = np.linspace(0, 2, num=3)
+    t = np.linspace(0, 2, num=2)
 
-res = optimize.minimize(
-    loss_fn, x0=mlp.theta, jac=grad_loss, method="L-BFGS-B", options={"gtol": 1e-7}
-)
+    nu = 0.01 / np.pi
 
-assert res.status == 0
-print("res = ", res)
+    mlp = MLP([2, 50, 1])
+    vbeloss = ViscousBurgersEquationLoss(mlp, given_t=t, given_x=x, nu=nu)
+    loss_fn = vbeloss.loss
+    grad_loss = grad(loss_fn)
 
-mlp.theta = res.x
-pred = mlp.predict(x_2d)
+    res = optimize.minimize(
+        loss_fn, x0=mlp.theta, jac=grad_loss, method="L-BFGS-B", options={"gtol": 1e-7}
+    )
 
-plt.plot(x, y, "-")
-plt.plot(x, pred, "o")
-plt.savefig("fig_burgers_eq.pdf")
+    assert res.status == 0
+    print("res = ", res)
+
+    mlp.theta = res.x
+    pred = mlp.predict(vbeloss.X)
+    assert pred.shape == (len(x) * len(t), 1)
+
