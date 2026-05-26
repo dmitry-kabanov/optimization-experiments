@@ -168,6 +168,7 @@ def main():
     # pred = mlp.predict(vbeloss.X)
     x_at_t_2 = np.column_stack((tfinal * np.ones(len(x)), x))
     pred = mlp.predict(x_at_t_2)
+    np.save(OUTDIR / "predictions.npy", pred)
     print("Prediction shape: ", pred.shape)
     print("Final training loss: ", wrapper_loss_fn(s.x, None))
     print(f"Elapsed time: {toc - tic:.3f} seconds")
