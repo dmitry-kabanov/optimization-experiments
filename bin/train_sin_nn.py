@@ -4,11 +4,10 @@ import time
 import jax
 import matplotlib.pyplot as plt
 import numpy as np
+from helpers import finish_experiment, start_experiment
 from loss import MisfitLoss
 from mlp import MLP
 from openinterfaces.interfaces.optim import Optim
-
-from helpers import finish_experiment, start_experiment
 
 jax.config.update("jax_enable_x64", True)
 
@@ -32,6 +31,9 @@ def _parse_args():
         action="store_true",
         default=False,
         help="Split random seed (key) for each layer. See the JAX docs for details",
+    )
+    parser.add_argument(
+        "--linesearch", help="Line-search strategy for Optim.jl optimizers"
     )
     parser.add_argument(
         "--outdir",
@@ -109,11 +111,15 @@ def main():
                 "f_abstol": 2.2204460492503131e-09,
                 "iterations": 30_000,
             }
+            if hasattr(args, "linesearch"):
+                options["linesearch"] = args.linesearch
         elif args.opt == "BFGS":
             options = {
                 "g_abstol": 1e-7,
                 "iterations": 30_000,
             }
+            if hasattr(args, "linesearch"):
+                options["linesearch"] = args.linesearch
         else:
             raise ValueError()
     else:

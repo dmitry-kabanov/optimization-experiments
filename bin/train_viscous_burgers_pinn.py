@@ -9,6 +9,7 @@ import jax
 import matplotlib.pyplot as plt
 import numpy as np
 from exact import compute_viscous_burgers_with_ic_and_periodic_bc_spectral
+from helpers import finish_experiment, start_experiment
 from loss import (
     InitialConditionLoss,
     PeriodicBoundaryConditionLoss,
@@ -16,8 +17,6 @@ from loss import (
 )
 from mlp import MLP
 from openinterfaces.interfaces.optim import Optim
-
-from helpers import finish_experiment, start_experiment
 
 jax.config.update("jax_enable_x64", True)
 
@@ -50,6 +49,9 @@ def _parse_args():
         action="store_true",
         default=False,
         help="Split random seed (key) for each layer. See the JAX docs for details",
+    )
+    parser.add_argument(
+        "--linesearch", help="Line-search strategy for Optim.jl optimizers"
     )
     parser.add_argument(
         "--outdir",
@@ -146,11 +148,15 @@ def main():
                 "f_abstol": 2.2204460492503131e-09,
                 "iterations": 30_000,
             }
+            if hasattr(args, "linesearch"):
+                options["linesearch"] = args.linesearch
         elif args.opt == "BFGS":
             options = {
                 "g_abstol": args.gtol,
                 "iterations": 30_000,
             }
+            if hasattr(args, "linesearch"):
+                options["linesearch"] = args.linesearch
         else:
             raise ValueError()
     else:
@@ -186,8 +192,8 @@ def main():
     plt.ylabel(r"$u$")
     plt.savefig(OUTDIR / "predictions.pdf")
 
-    if args.outdir == "_output":
-        plt.show()
+    # if args.outdir == "_output":
+    #     plt.show()
 
     finish_experiment(OUTDIR)
 
