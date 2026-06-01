@@ -20,6 +20,8 @@ from openinterfaces.interfaces.optim import Optim
 
 jax.config.update("jax_enable_x64", True)
 
+loss_trace: list[float] = []
+
 
 DEFAULT_GRADIENT_TOL = 1e-3
 
@@ -66,6 +68,7 @@ def get_wrapper_loss_fn(loss_fn_list):
         result = 0.0
         for loss_fn in loss_fn_list:
             result += float(loss_fn(x))
+        loss_trace.append(result)
         return result
 
     return wrapper_loss_fn
@@ -184,12 +187,16 @@ def main():
         u0, x, dx, tfinal, nu
     )
 
+    np.save(OUTDIR / "loss_trace.npy", loss_trace)
+    np.save(OUTDIR / "theta.npy", mlp.theta)
+
+    plt.figure()
     plt.plot(x, pred, "-", label=r"$u_{\mathrm{PINN}}$")
     plt.plot(x, exact, "--", label=r"$u_{\mathrm{exact}}$")
     plt.legend(loc="best")
-    plt.tight_layout(pad=0.1)
     plt.xlabel(r"$x$")
     plt.ylabel(r"$u$")
+    plt.tight_layout(pad=0.1)
     plt.savefig(OUTDIR / "predictions.pdf")
 
     # if args.outdir == "_output":
