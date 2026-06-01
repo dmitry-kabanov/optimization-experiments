@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+
 import pandas as pd
 
 OUTDIR = "_output"
@@ -29,6 +30,7 @@ for d in results_directories:
         res["impl"] = f"{impl:16s}"
         res["gtol"] = f"{gtol:.0e}"
         res["split_key"] = "yes" if split_key else " no"
+        res["linesearch"] = []
 
     with open(log_filename, "r") as fh:
         log_lines = fh.readlines()
@@ -89,8 +91,8 @@ df_false_pivoted = df_false.set_index(["impl", "gtol"]).T
 df_true_pivoted = df_true.set_index(["impl", "gtol"]).T
 
 # Configure pandas options to print the entire width of the DataFrame nicely
-pd.set_option('display.max_columns', None)
-pd.set_option('display.width', 1000)
+pd.set_option("display.max_columns", None)
+pd.set_option("display.width", 1000)
 
 print("=== DataFrame (split_key = False) ===")
 print(df_false_pivoted)
